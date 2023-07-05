@@ -1,30 +1,16 @@
-# This code is compatible with Terraform 4.25.0 and versions that are backwards compatible to 4.25.0.
-# For information about validating this Terraform code, see https://developer.hashicorp.com/terraform/tutorials/gcp-get-started/google-cloud-platform-build#format-and-validate-the-configuration
 #Jenkins Server
-resource "google_compute_instance" "jenkins" {
+resource "google_compute_instance" "master" {
   boot_disk {
     auto_delete = true
-    device_name = "jenkins"
-
     initialize_params {
       image = "projects/debian-cloud/global/images/debian-11-bullseye-v20230509"
       size  = 10
       type  = "pd-balanced"
     }
-
-    mode = "READ_WRITE"
-  }
-
-  can_ip_forward      = false
-  deletion_protection = false
-  enable_display      = false
-
-  labels = {
-    goog-ec-src = "vm_add-tf"
-  }
-
+   }
+  zone = "us-central1-a"
   machine_type = "e2-medium"
-  name         = "jenkins"
+  name         = "master"
 
   network_interface {
     access_config {
@@ -34,53 +20,25 @@ resource "google_compute_instance" "jenkins" {
     subnetwork = "projects/project1-337123/regions/us-central1/subnetworks/default"
   }
 
-  scheduling {
-    automatic_restart   = true
-    on_host_maintenance = "MIGRATE"
-    preemptible         = false
-    provisioning_model  = "STANDARD"
-  }
-
   service_account {
     email  = "122803232130-compute@developer.gserviceaccount.com"
-    scopes = ["https://www.googleapis.com/auth/devstorage.read_only", "https://www.googleapis.com/auth/logging.write", "https://www.googleapis.com/auth/monitoring.write", "https://www.googleapis.com/auth/service.management.readonly", "https://www.googleapis.com/auth/servicecontrol", "https://www.googleapis.com/auth/trace.append"]
+    scopes = ["cloud-platform"]
   }
-
-  shielded_instance_config {
-    enable_integrity_monitoring = true
-    enable_secure_boot          = false
-    enable_vtpm                 = true
-  }
-
-  zone = "us-central1-a"
+metadata_startup_script = "sudo apt-get update; sudo apt install default-jdk; sudo apt install wget; sudo wget -q -O - https://pkg.jenkins.io/debian/jenkins.io.key; sudo apt-key add -Copy; sudo sh -c 'echo deb http://pkg.jenkins.io/debian-stable binary/ > /etc/apt/sources.list.d/jenkins.list'; sudo apt update; sudo apt install jenkins; sudo systemctl enable --now jenkins"
 }
-
-#Staging Server
-
-resource "google_compute_instance" "staging" {
+#Agent1
+resource "google_compute_instance" "agent-1" {
   boot_disk {
     auto_delete = true
-    device_name = "staging"
-
     initialize_params {
       image = "projects/debian-cloud/global/images/debian-11-bullseye-v20230509"
       size  = 10
       type  = "pd-balanced"
     }
-
-    mode = "READ_WRITE"
-  }
-
-  can_ip_forward      = false
-  deletion_protection = false
-  enable_display      = false
-
-  labels = {
-    goog-ec-src = "vm_add-tf"
-  }
-
+   }
+  zone = "us-central1-a"
   machine_type = "e2-medium"
-  name         = "staging"
+  name         = "agent-1"
 
   network_interface {
     access_config {
@@ -90,52 +48,25 @@ resource "google_compute_instance" "staging" {
     subnetwork = "projects/project1-337123/regions/us-central1/subnetworks/default"
   }
 
-  scheduling {
-    automatic_restart   = true
-    on_host_maintenance = "MIGRATE"
-    preemptible         = false
-    provisioning_model  = "STANDARD"
-  }
-
   service_account {
     email  = "122803232130-compute@developer.gserviceaccount.com"
-        scopes = ["https://www.googleapis.com/auth/devstorage.read_only", "https://www.googleapis.com/auth/logging.write", "https://www.googleapis.com/auth/monitoring.write", "https://www.googleapis.com/auth/service.management.readonly", "https://www.googleapis.com/auth/servicecontrol", "https://www.googleapis.com/auth/trace.append"]
+    scopes = ["cloud-platform"]
   }
-
-  shielded_instance_config {
-    enable_integrity_monitoring = true
-    enable_secure_boot          = false
-    enable_vtpm                 = true
-  }
-
-  zone = "us-central1-a"
+  metadata_startup_script = "sudo apt-get update; sudo apt-get install -yq build-essential apache2; sudo apt install default-jdk"
 }
-
-#Prod Server
-resource "google_compute_instance" "prod" {
+#Agent2
+resource "google_compute_instance" "agent-2" {
   boot_disk {
     auto_delete = true
-    device_name = "prod"
-
     initialize_params {
       image = "projects/debian-cloud/global/images/debian-11-bullseye-v20230509"
       size  = 10
       type  = "pd-balanced"
     }
-
-    mode = "READ_WRITE"
-  }
-
-  can_ip_forward      = false
-  deletion_protection = false
-  enable_display      = false
-
-  labels = {
-    goog-ec-src = "vm_add-tf"
-  }
-
+   }
+  zone = "us-central1-a"
   machine_type = "e2-medium"
-  name         = "prod"
+  name         = "agent-2"
 
   network_interface {
     access_config {
@@ -145,23 +76,10 @@ resource "google_compute_instance" "prod" {
     subnetwork = "projects/project1-337123/regions/us-central1/subnetworks/default"
   }
 
-  scheduling {
-    automatic_restart   = true
-    on_host_maintenance = "MIGRATE"
-    preemptible         = false
-    provisioning_model  = "STANDARD"
-  }
-
   service_account {
     email  = "122803232130-compute@developer.gserviceaccount.com"
-        scopes = ["https://www.googleapis.com/auth/devstorage.read_only", "https://www.googleapis.com/auth/logging.write", "https://www.googleapis.com/auth/monitoring.write", "https://www.googleapis.com/auth/service.management.readonly", "https://www.googleapis.com/auth/servicecontrol", "https://www.googleapis.com/auth/trace.append"]
+    scopes = ["cloud-platform"]
   }
-
-  shielded_instance_config {
-    enable_integrity_monitoring = true
-    enable_secure_boot          = false
-    enable_vtpm                 = true
-  }
-
-  zone = "us-central1-a"
+  
+  metadata_startup_script = "sudo apt-get update; sudo apt-get install -yq build-essential apache2; sudo apt install default-jdk"
 }

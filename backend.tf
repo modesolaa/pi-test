@@ -16,7 +16,7 @@
 
 # Backend configuration for terraform state storage
 terraform {
-  required_version = "~> 1.4.6"
+    required_version = "~> 1.5.1"
    backend "gcs" {                                     # Uncomment this line prior to running.
    bucket = "mode-test"              # Uncomment this line prior to running. We are using the manually created bootstrap project at organization level in the hierarchy.  You don't need to change this, unless the way we store state changes.
    prefix = "terraform/state/pi-assignment"    # Uncomment beginning of line after inputting proper unique state storage bucket path. A unique path is CRITICAL to not interfere with other terraform code!
